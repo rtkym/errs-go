@@ -1,0 +1,32 @@
+# .golangci-lint.yaml
+# https://golangci-lint.run/usage/configuration/
+
+linters:
+  enable-all: true
+  disable:
+    ## --- deprecated
+    - exhaustivestruct
+    - golint
+    - interfacer
+    - maligned
+    - scopelint
+    ## --- not used
+    - gci
+    - godot
+    - nlreturn
+    - lll
+    - varnamelen
+
+linters-settings:
+  maintidx:
+    under: 15
+
+issues:
+  exclude-rules:
+    - path: _test.go
+      linters:
+        - dupl
+        - funlen
+        - paralleltest
+        - goconst
+        - goerr113
