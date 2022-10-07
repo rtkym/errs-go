@@ -175,11 +175,12 @@ func (x *Error) formatStack(state fmt.State, verb rune) {
 }
 
 // MarshallJSON returns a JSON string of errs.Error.
+// However, because the Cause is embedded in the Message, the type information is lost.
 func (x *Error) MarshalJSON() ([]byte, error) {
 	v, err := json.Marshal(&struct {
 		Message    string                 `json:"message"`
 		Values     map[string]interface{} `json:"values"`
-		StackTrace []StackFrame           `json:"stackTrace"`
+		StackTrace StackTrace             `json:"stackTrace"`
 	}{
 		Message:    x.Error(),
 		Values:     x.Values(),
@@ -192,7 +193,21 @@ func (x *Error) MarshalJSON() ([]byte, error) {
 	return v, nil
 }
 
-// UnmarshalJSON is an unsupported operation.
+// UnmarshalJSON recovers Error objects from JSON strings.
+// However, nested error structures are not restored.
 func (x *Error) UnmarshalJSON(b []byte) error {
-	return New("unsupported operation")
+	resource := new(struct {
+		Message    string                 `json:"message"`
+		Values     map[string]interface{} `json:"values"`
+		StackTrace StackTrace             `json:"stackTrace"`
+	})
+	if err := json.Unmarshal(b, resource); err != nil {
+		return err
+	}
+
+	x.msg = resource.Message
+	x.values = resource.Values
+	x.stack = resource.StackTrace
+
+	return nil
 }
