@@ -12,16 +12,17 @@ import (
 func TestString(t *testing.T) {
 	const ErrSimple errs.StringError = "ErrSimple"
 
-	var (
-		Ref1       = ErrSimple
-		Ref2 error = ErrSimple
-	)
-
-	cause := errors.New("test")
-
 	t.Run("単体でエラーとして機能する", func(t *testing.T) {
-		assert.Error(t, ErrSimple)
-		assert.Equal(t, "ErrSimple", ErrSimple.Error())
+		err := ErrSimple
+
+		assert.Error(t, err)
+		assert.Equal(t, "ErrSimple", err.Error())
+
+		assert.True(t, errors.Is(err, ErrSimple))
+
+		var asErr errs.StringError
+		assert.True(t, errors.As(err, &asErr))
+		assert.Equal(t, ErrSimple, asErr)
 	})
 
 	t.Run("Newでエラーを生成して機能する", func(t *testing.T) {
@@ -31,9 +32,19 @@ func TestString(t *testing.T) {
 		assert.Equal(t, ErrSimple, errors.Unwrap(newErr))
 
 		assert.True(t, errors.Is(newErr, ErrSimple))
+
+		var asErr errs.StringError
+		assert.True(t, errors.As(newErr, &asErr))
+		assert.Equal(t, ErrSimple, asErr)
 	})
 
 	t.Run("Wrapでエラーを生成して機能する", func(t *testing.T) {
+		var (
+			Ref1        = ErrSimple
+			Ref2  error = ErrSimple
+			cause error = errors.New("test")
+		)
+
 		wrapErr := errWrap(ErrSimple, cause)
 
 		assert.Equal(t, "ErrSimple: test", wrapErr.Error())
