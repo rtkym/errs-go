@@ -23,12 +23,16 @@ func (s StringError) New() *Error {
 
 // Wrap creates *errs.Error that wraps StringError and cause.
 func (s StringError) Wrap(cause error) *Error {
+	if cause == nil {
+		panic("nil error")
+	}
+
 	wrap := &stringError{
 		strErr: s,
 		cause:  cause,
 	}
 
-	err := newError("", false)
+	err := newError("", haveStackTrace(cause))
 	err.cause = wrap
 
 	return err
